@@ -1,14 +1,24 @@
+# src/classify_plants.py
+
 import torch
 import torch.nn as nn
 import torch.optim as optim
 from torchvision import datasets, transforms, models
 from torch.utils.data import DataLoader
 from torchvision.models import ResNet18_Weights
+import sys
+import os
 
+# Make sure src/ can be imported
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-# Modify this based on our label set
-NUM_LABELS = 102  # not sure if it should be 5 or 102
+# === Constants ===
+NUM_LABELS = 102  # Because Oxford dataset has 102 flower classes
+NUM_EPOCHS = 20   # 🚀 Train longer for better accuracy
+BATCH_SIZE = 32
+LEARNING_RATE = 0.001
 
+# === Model ===
 class PlantClassifier(nn.Module):
     def __init__(self):
         super(PlantClassifier, self).__init__()
@@ -18,28 +28,28 @@ class PlantClassifier(nn.Module):
             nn.ReLU(),
             nn.Dropout(0.3),
             nn.Linear(128, NUM_LABELS),
-            nn.Sigmoid()  # Multi-label output IMPORTANT
+            nn.Sigmoid()  # Multi-label output
         )
 
     def forward(self, x):
         return self.base_model(x)
 
-
-def train_classifier(data_dir, num_epochs=5):
+# === Training function (optional) ===
+def train_classifier(data_dir, num_epochs=NUM_EPOCHS):
     transform = transforms.Compose([
         transforms.Resize((224, 224)),
         transforms.ToTensor()
     ])
-
     dataset = datasets.ImageFolder(root=data_dir, transform=transform)
-    dataloader = DataLoader(dataset, batch_size=32, shuffle=True)
+    dataloader = DataLoader(dataset, batch_size=BATCH_SIZE, shuffle=True)
 
     model = PlantClassifier()
     criterion = nn.BCELoss()
-    optimizer = optim.Adam(model.parameters(), lr=0.001)
+    optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE)
 
     for epoch in range(num_epochs):
         model.train()
+        running_loss = 0.0
         for imgs, labels in dataloader:
             labels = labels.type(torch.FloatTensor)
             outputs = model(imgs)
@@ -49,40 +59,40 @@ def train_classifier(data_dir, num_epochs=5):
             loss.backward()
             optimizer.step()
 
-        print(f"Epoch [{epoch+1}/{num_epochs}], Loss: {loss.item():.4f}")
-    
+            running_loss += loss.item()
+
+        print(f"Epoch [{epoch+1}/{num_epochs}] - Loss: {running_loss/len(dataloader):.4f}")
+
     torch.save(model.state_dict(), "models/plant_classifier.pt")
+    print("✅ Model saved to models/plant_classifier.pt")
     return model
 
-
+# === Main Run Block ===
 if __name__ == "__main__":
     from src.prepare_data import prepare_dataset
     from src.dataset import FlowerDataset
     from torch.utils.data import DataLoader
-    import os
 
-    os.makedirs("models", exist_ok=True)  # ensureS ouur models/ exists
+    os.makedirs("models", exist_ok=True)
 
-    # Step 1: Get labels and split indices
+    # Step 1: Load labels and splits
     labels, train_idx, val_idx, test_idx = prepare_dataset()
 
-    # Step 2: Create dataset + dataloader using our custom dataset class (need to check if i did it right)
+    # Step 2: Dataset + DataLoader
     train_dataset = FlowerDataset("data/flowers/jpg", train_idx, labels)
-    train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True)
+    train_loader = DataLoader(train_dataset, batch_size=BATCH_SIZE, shuffle=True)
 
-    # Step 3: Initialize model 'criterion" optimizer
+    # Step 3: Init model, loss, optimizer
     model = PlantClassifier()
     criterion = nn.BCELoss()
-    optimizer = optim.Adam(model.parameters(), lr=0.001)
+    optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE)
 
-    # Step 4: Training loop
-    for epoch in range(5):
+    # Step 4: Training
+    for epoch in range(NUM_EPOCHS):
         model.train()
         running_loss = 0.0
         for images, labels in train_loader:
             labels = nn.functional.one_hot(torch.tensor(labels, dtype=torch.long), num_classes=NUM_LABELS).float()
-
-
             outputs = model(images)
             loss = criterion(outputs, labels)
 
@@ -92,9 +102,8 @@ if __name__ == "__main__":
 
             running_loss += loss.item()
 
-        print(f"Epoch {epoch+1}/5 - Loss: {running_loss/len(train_loader):.4f}")
+        print(f"Epoch {epoch+1}/{NUM_EPOCHS} - Loss: {running_loss/len(train_loader):.4f}")
 
-    # Step 5: This saves the model, dude making it create a folder too so long
+    # Step 5: Save model
     torch.save(model.state_dict(), "models/plant_classifier.pt")
     print("✅ Model saved to models/plant_classifier.pt")
-
