@@ -5,6 +5,7 @@ from torchvision import transforms
 from PIL import Image
 from src.classify_plants import PlantClassifier
 from src.generate_music import generate_midi
+from src.lstm_model import MusicLSTM
 import os
 import glob
 import random
@@ -26,6 +27,28 @@ def predict_traits(image_path):
         traits = model(input_tensor).squeeze().numpy()
     return traits
 
+def generate_music_sequence(traits, num_notes=50):
+    # Prepare input
+    input_seq = torch.tensor(traits[:30]).float().unsqueeze(0).unsqueeze(-1)  # (1, 30, 1)
+
+    # Load trained LSTM
+    lstm = MusicLSTM()
+    lstm.load_state_dict(torch.load("models/music_lstm.pt"))
+    lstm.eval()
+
+    sequence = []
+
+    with torch.no_grad():
+        for _ in range(num_notes):
+            output = lstm(input_seq)  # Predict next note
+            sequence.append(output.item())  # Save prediction
+
+            # Prepare next input: slide window
+            next_input = output.unsqueeze(1)  # ONLY one unsqueeze (batch, 1, 1)
+            input_seq = torch.cat((input_seq[:, 1:, :], next_input), dim=1)
+
+    return sequence
+
 if __name__ == "__main__":
     os.makedirs("output_music", exist_ok=True)
 
@@ -41,17 +64,19 @@ if __name__ == "__main__":
     copyfile(image_path, "output_music/used_flower.jpg")
     print(f"🌸 Selected flower: {os.path.basename(image_path)}")
 
-    # 🔥 Predict traits
+    # 🔮 Predict traits
     traits = predict_traits(image_path)
 
-    # 🔥 Make traits more dynamic
-    traits = traits * 10.0  # Amplify traits
+    # 🔥 Make traits slightly more dynamic
+    traits = traits * 10.0  # Amplify
     traits = traits + (torch.randn_like(torch.tensor(traits)) * 0.05).numpy()  # Add slight noise
 
-    # 🔥 Print traits
     print("🔮 Predicted traits (first 30):", traits[:30])
 
-    # 🔥 Generate MIDI from traits
-    generate_midi(seed_sequence=traits[:30], output_file="output_music/music1.mid")
+    # 🔥 Use trained LSTM to generate music sequence
+    sequence = generate_music_sequence(traits)
+
+    # 🔥 Generate MIDI from sequence
+    generate_midi(seed_sequence=sequence, output_file="output_music/music1.mid")
 
     print("✅ Music generated and saved to output_music/music1.mid")

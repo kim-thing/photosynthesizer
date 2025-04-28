@@ -5,11 +5,11 @@ import random
 BRIGHT_INSTRUMENTS = [0, 5, 11, 12, 14]   # Piano, Electric Piano, Vibraphone, Marimba, Xylophone
 DARK_INSTRUMENTS = [32, 34, 43, 44, 48]   # Acoustic Bass, Electric Bass, Contrabass, Cello, String Ensemble
 
-def pick_instrument_and_pitch(flower_type, flower_brightness):
-    if flower_brightness > 0:  # Brighter flowers
+def pick_instrument_and_pitch(flower_type="unknown", flower_brightness=0):
+    if flower_brightness > 0:
         instrument = random.choice(BRIGHT_INSTRUMENTS)
         pitch_shift = 12  # +1 octave
-    else:  # Darker flowers
+    else:
         instrument = random.choice(DARK_INSTRUMENTS)
         pitch_shift = -12  # -1 octave
     return instrument, pitch_shift
@@ -21,7 +21,7 @@ def generate_midi(seed_sequence, output_file="output.mid", flower_type="unknown"
     midi.addTrackName(track, time, "Generated Track")
     midi.addTempo(track, time, 120)
 
-    # Get instrument and pitch shift based on flower
+    # Get instrument and pitch shift
     instrument, pitch_shift = pick_instrument_and_pitch(flower_type, flower_brightness)
 
     # Set the instrument
@@ -32,9 +32,8 @@ def generate_midi(seed_sequence, output_file="output.mid", flower_type="unknown"
     volume = 100
 
     for i, pitch in enumerate(seed_sequence):
-        # Map the trait to a note and apply pitch shift
         base_note = int((pitch * 50) + 60) + pitch_shift
-        base_note = max(0, min(base_note, 127))  # Clamp to valid MIDI notes
+        base_note = max(0, min(base_note, 127))  # Clamp to MIDI range
         midi.addNote(track, channel, base_note, time + i, duration, volume)
 
     with open(output_file, "wb") as output_file_handle:

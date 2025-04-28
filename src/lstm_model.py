@@ -8,8 +8,13 @@ class MusicLSTM(nn.Module):
         self.fc = nn.Linear(hidden_size, output_size)
 
     def forward(self, x):
-        out, _ = self.lstm(x)
-        return self.fc(out)
+        # Pass input through LSTM
+        out, _ = self.lstm(x)  # out shape: (batch_size, seq_len, hidden_size)
 
+        # Only take the output from the LAST time step
+        out = out[:, -1, :]  # shape becomes (batch_size, hidden_size)
 
+        # Pass through the final fully connected layer
+        out = self.fc(out)   # shape becomes (batch_size, output_size)
 
+        return out
