@@ -1,3 +1,5 @@
+# src/main.py
+
 import torch
 from torchvision import transforms
 from PIL import Image
@@ -35,24 +37,21 @@ if __name__ == "__main__":
         print("❌ No flower images found in data/flowers/jpg/")
         exit()
 
-    # Save the flower image for reference
+    # Save the selected flower image
     copyfile(image_path, "output_music/used_flower.jpg")
     print(f"🌸 Selected flower: {os.path.basename(image_path)}")
 
     # 🔥 Predict traits
     traits = predict_traits(image_path)
 
-    # 🔥 SUPER QUICK CHANGES:
-    # 1. Amplify traits (make differences bigger)
-    traits = traits * 10.0
+    # 🔥 Make traits more dynamic
+    traits = traits * 10.0  # Amplify traits
+    traits = traits + (torch.randn_like(torch.tensor(traits)) * 0.05).numpy()  # Add slight noise
 
-    # 2. Add slight randomness to traits (make music vary)
-    traits = traits + (torch.randn_like(torch.tensor(traits)) * 0.05).numpy()
+    # 🔥 Print traits
+    print("🔮 Predicted traits (first 30):", traits[:30])
 
-    # 🔥 Print amplified traits
-    print("Predicted traits (first 30):", traits[:30])
-
-    # 🔥 Generate longer, more interesting music
+    # 🔥 Generate MIDI from traits
     generate_midi(seed_sequence=traits[:30], output_file="output_music/music1.mid")
 
     print("✅ Music generated and saved to output_music/music1.mid")

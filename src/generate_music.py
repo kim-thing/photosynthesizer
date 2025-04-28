@@ -1,41 +1,41 @@
 from midiutil import MIDIFile
 import random
 
-def generate_midi(seed_sequence, output_file="output_music/music1.mid"):
-    midi = MIDIFile(1)  # Single track
+# Define your instrument categories
+BRIGHT_INSTRUMENTS = [0, 5, 11, 12, 14]   # Piano, Electric Piano, Vibraphone, Marimba, Xylophone
+DARK_INSTRUMENTS = [32, 34, 43, 44, 48]   # Acoustic Bass, Electric Bass, Contrabass, Cello, String Ensemble
+
+def pick_instrument_and_pitch(flower_type, flower_brightness):
+    if flower_brightness > 0:  # Brighter flowers
+        instrument = random.choice(BRIGHT_INSTRUMENTS)
+        pitch_shift = 12  # +1 octave
+    else:  # Darker flowers
+        instrument = random.choice(DARK_INSTRUMENTS)
+        pitch_shift = -12  # -1 octave
+    return instrument, pitch_shift
+
+def generate_midi(seed_sequence, output_file="output.mid", flower_type="unknown", flower_brightness=0):
+    midi = MIDIFile(1)  # One track
     track = 0
-    time = 0  # Start time
-    tempo = random.randint(80, 140)  # 🎵 Random tempo (slow or fast)
-    midi.addTempo(track, time, tempo)
+    time = 0
+    midi.addTrackName(track, time, "Generated Track")
+    midi.addTempo(track, time, 120)
 
-    # 🔥 Randomly pick instrument (MIDI program numbers)
-    instruments = {
-        "Piano": 0,
-        "Guitar": 24,
-        "Violin": 40,
-        "Flute": 73,
-        "Trumpet": 56
-    }
-    instrument_name, instrument_prog = random.choice(list(instruments.items()))
-    midi.addProgramChange(track, 0, time, instrument_prog)
-    print(f"🎸 Using instrument: {instrument_name}")
+    # Get instrument and pitch shift based on flower
+    instrument, pitch_shift = pick_instrument_and_pitch(flower_type, flower_brightness)
 
-    # 🔥 Use a real scale (C major scale notes)
-    scale = [60, 62, 64, 65, 67, 69, 71, 72]  # C D E F G A B C
+    # Set the instrument
+    midi.addProgramChange(0, 0, 0, instrument)
 
-    for val in seed_sequence:
-        pitch_idx = int(abs(val)) % len(scale)
-        pitch = scale[pitch_idx]
+    channel = 0
+    duration = 1  # 1 beat per note
+    volume = 100
 
-        # 🔥 Add some randomness to octave
-        pitch += random.choice([0, 12, -12])
+    for i, pitch in enumerate(seed_sequence):
+        # Map the trait to a note and apply pitch shift
+        base_note = int((pitch * 50) + 60) + pitch_shift
+        base_note = max(0, min(base_note, 127))  # Clamp to valid MIDI notes
+        midi.addNote(track, channel, base_note, time + i, duration, volume)
 
-        velocity = random.randint(60, 127)  # how loud
-        duration = random.choice([0.5, 1.0, 1.5])  # how long note holds
-
-        midi.addNote(track, 0, pitch, time, duration, velocity)
-        time += duration  # move time forward
-
-    # Save MIDI file
-    with open(output_file, "wb") as f:
-        midi.writeFile(f)
+    with open(output_file, "wb") as output_file_handle:
+        midi.writeFile(output_file_handle)
