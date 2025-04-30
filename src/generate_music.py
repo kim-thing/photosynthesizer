@@ -1,7 +1,10 @@
 from midiutil import MIDIFile
 import random
 
-# Define your instrument categories
+# instrument categories this wokred in lass commit not workig as well now 
+
+
+
 BRIGHT_INSTRUMENTS = [0, 5, 11, 12, 14]   # Piano, Electric Piano, Vibraphone, Marimba, Xylophone
 DARK_INSTRUMENTS = [32, 34, 43, 44, 48]   # Acoustic Bass, Electric Bass, Contrabass, Cello, String Ensemble
 
@@ -21,7 +24,7 @@ def generate_midi(seed_sequence, output_file="output.mid", flower_type="unknown"
     midi.addTrackName(track, time, "Generated Track")
     midi.addTempo(track, time, 120)
 
-    # Get instrument and pitch shift
+    # Get instrument and pitch shift 
     instrument, pitch_shift = pick_instrument_and_pitch(flower_type, flower_brightness)
 
     # Set the instrument
@@ -38,3 +41,6 @@ def generate_midi(seed_sequence, output_file="output.mid", flower_type="unknown"
 
     with open(output_file, "wb") as output_file_handle:
         midi.writeFile(output_file_handle)
+
+
+#i thik this file is being ignored now 
