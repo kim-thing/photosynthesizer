@@ -30,6 +30,7 @@ def extract_notes_from_midi(midi_path):
     return notes
 
 # Step 2 Randomly pick MIDI files 
+# used chat for this section
 all_midi_files = []
 for root, _, files in os.walk(MIDI_ROOT):
     for file in files:
@@ -112,7 +113,7 @@ for epoch in range(NUM_EPOCHS):
     preds = torch.cat(preds)
     trues = torch.cat(trues)
     acc = accuracy_score(trues.cpu().numpy().flatten(), preds.cpu().numpy().flatten())
-    f1 = f1_score(trues.cpu().numpy().flatten(), preds.cpu().numpy().flatten(), zero_division=0)
+    f1 = f1_score(trues.cpu().numpy().flatten(), preds.cpu().numpy().flatten(), zero_division=0) #did not know we needed numpy again in this line
 
 
 
