@@ -51,7 +51,7 @@ for midi_path in sampled_files:
     if len(notes) >= SEQUENCE_LENGTH + 1:
         all_notes.extend(notes)
 
-print(f"✅ Collected {len(all_notes)} total notes.")
+print(f" +++Collected {len(all_notes)} total notes.")
 
 #Step 4 Prepare (X, y) sequences 
 X = []
@@ -73,7 +73,7 @@ y = np.array(y) / 127.0
 X = torch.tensor(X).float().unsqueeze(-1)  # (samples, seq_len, 1)
 y = torch.tensor(y).float().unsqueeze(-1)  # (samples, 1)
 
-print(f"✅ Final training data shape: {X.shape}")
+print(f"+++ Final training data shape: {X.shape}")
 
 # Step 5 Train MusicLSTM 
 model = MusicLSTM(input_size=1, hidden_size=128, num_layers=2, output_size=1)
