@@ -18,26 +18,30 @@ def pick_instrument_and_pitch(flower_type="unknown", flower_brightness=0):
     return instrument, pitch_shift
 
 def generate_midi(seed_sequence, output_file="output.mid", flower_type="unknown", flower_brightness=0):
-    midi = MIDIFile(1)  # One track
+    midi = MIDIFile(1)  # 1 thirty note sequence
     track = 0
     time = 0
     midi.addTrackName(track, time, "Generated Track")
     midi.addTempo(track, time, 120)
 
-    # Get instrument and pitch shift 
+
+
+    # gets instrument and pitch shift 
     instrument, pitch_shift = pick_instrument_and_pitch(flower_type, flower_brightness)
 
-    # Set the instrument
+    # sets the instrument
     midi.addProgramChange(0, 0, 0, instrument)
 
     channel = 0
     duration = 1  # 1 beat per note
-    volume = 100
+    volume = 100  #defualt
 
     for i, pitch in enumerate(seed_sequence):
         base_note = int((pitch * 50) + 60) + pitch_shift
-        base_note = max(0, min(base_note, 127))  # Clamp to MIDI range
+        base_note = max(0, min(base_note, 127))  # reduces to MIDI range
         midi.addNote(track, channel, base_note, time + i, duration, volume)
+
+
 
     with open(output_file, "wb") as output_file_handle:
         midi.writeFile(output_file_handle)

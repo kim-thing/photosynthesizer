@@ -17,6 +17,9 @@ class FlowerDataset(Dataset):
             transforms.ToTensor()
         ])
 
+
+
+
     def __len__(self):
         return len(self.indices)
 
@@ -29,23 +32,23 @@ class FlowerDataset(Dataset):
 
 
 
-#mask still doesnt owkre 
+#green background mask wasnt as effective as just resizing
         image_np = np.array(image)
         hsv = self.rgb_to_hsv(image_np)
-        # Detect green background and mask it out
+        # detect green background and mask it out
         lower_green = 35 / 360.0
         upper_green = 85 / 360.0
         mask = (hsv[:, :, 0] >= lower_green) & (hsv[:, :, 0] <= upper_green)
-        image_np[mask] = [0, 0, 0]  # Set green areas to black
+        image_np[mask] = [0, 0, 0]  # set green areas to black
 
 
 
 
 
-        # Convert back to PIL image
+        # convert back to PIL image
         masked_image = Image.fromarray(image_np)
 
-        # Apply transforms
+        # appply transforms
         image_tensor = self.transform(masked_image)
         label = self.labels[img_id] - 1  # 1-based to 0-based
 

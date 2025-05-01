@@ -17,9 +17,9 @@ def download_if_missing(url, filename):
     if not os.path.exists(path):
         print(f"⬇️ Downloading {filename}...") #helped alot
         urllib.request.urlretrieve(url, path)
-        print(f"✅ Saved: {path}")
+        print(f"000 Saved: {path}")
     else:
-        print(f"✅ {filename} already exists, skipping.")
+        print(f"xxx {filename} already exists, skipping.")
 
 for url, fname in FILES:
     download_if_missing(url, fname)

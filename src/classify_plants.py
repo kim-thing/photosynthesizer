@@ -12,13 +12,13 @@ from sklearn.metrics import accuracy_score, f1_score
 #  imports from src/
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-# === cconstants ===
+#  cconstants 
 NUM_LABELS = 102
 NUM_EPOCHS = 10  
 BATCH_SIZE = 32
 LEARNING_RATE = 0.0005
 
-# === model ===
+#  model 
 class PlantClassifier(nn.Module):
     def __init__(self):
         super(PlantClassifier, self).__init__()
@@ -28,18 +28,20 @@ class PlantClassifier(nn.Module):
             nn.ReLU(),
 
 
+
+
             nn.Dropout(0.4),
             nn.Linear(128, NUM_LABELS)
-            # ❌ No Sigmoid
+            # replaced Sigmoids,didnt make sense for 1 layer
         )
 
     def forward(self, x):
         return self.base_model(x)
 
-# === Train Function ===
+# Train Function 
 def train_classifier(train_loader, val_loader):
     model = PlantClassifier()
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu") #had
     model.to(device)
 
     criterion = nn.CrossEntropyLoss()
@@ -55,9 +57,10 @@ def train_classifier(train_loader, val_loader):
         train_preds = []
         train_labels = []
 
+
+
         for images, labels in train_loader:
             images, labels = images.to(device), labels.to(device)
-
             optimizer.zero_grad()
             outputs = model(images)
             loss = criterion(outputs, labels)
@@ -79,7 +82,7 @@ def train_classifier(train_loader, val_loader):
         train_acc = accuracy_score(train_labels.numpy(), train_preds.numpy())
         train_f1 = f1_score(train_labels.numpy(), train_preds.numpy(), average='macro')
 
-# === Validation Phase ===
+#  Validation Phase 
         model.eval()
         val_loss = 0
         val_preds = []
@@ -110,18 +113,18 @@ def train_classifier(train_loader, val_loader):
 
 
 
-        # === Early Stopping
+        #  Early Stopping
         if avg_val_loss < best_val_loss:
             best_val_loss = avg_val_loss
             epochs_no_improve = 0
             torch.save(model.state_dict(), "models/plant_classifier.pt")
-            print(f"✅ Validation loss improved, model saved!")
+            print(f"OOOOOO Validation loss improved, model saved!")
         else:
             epochs_no_improve += 1
             print(f"⚠️ No improvement for {epochs_no_improve} epoch(s).")
 
         if epochs_no_improve >= early_stop_patience:
-            print("⛔ Early stopping triggered.") #lowkey the emojies helped me see the outputs better so i added more 
+            print(">>> Early stopping ") #lowkey the emojies helped me see the outputs better so i added more 
             break
 
 # main whar we had before tweaked
@@ -131,7 +134,7 @@ if __name__ == "__main__":
 
     os.makedirs("models", exist_ok=True)
 
-    # === Data Augmentation
+    #  Data Augmentation
     train_transform = transforms.Compose([
         transforms.RandomResizedCrop(224),
         transforms.RandomHorizontalFlip(),

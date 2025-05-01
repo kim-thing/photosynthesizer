@@ -53,7 +53,7 @@ for midi_path in sampled_files:
 
 print(f"✅ Collected {len(all_notes)} total notes.")
 
-# === Step 4: Prepare (X, y) sequences ===
+#Step 4 Prepare (X, y) sequences 
 X = []
 y = []
 
@@ -75,11 +75,10 @@ y = torch.tensor(y).float().unsqueeze(-1)  # (samples, 1)
 
 print(f"✅ Final training data shape: {X.shape}")
 
-# === Step 5: Train MusicLSTM ===
+# Step 5 Train MusicLSTM 
 model = MusicLSTM(input_size=1, hidden_size=128, num_layers=2, output_size=1)
 criterion = nn.MSELoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
-
 train_dataset = TensorDataset(X, y)
 train_loader = DataLoader(train_dataset, batch_size=BATCH_SIZE, shuffle=True)
 
@@ -96,6 +95,8 @@ for epoch in range(NUM_EPOCHS):
     trues = []
 
 
+
+
     for xb, yb in train_loader:
         optimizer.zero_grad()
         output = model(xb)
@@ -104,18 +105,22 @@ for epoch in range(NUM_EPOCHS):
         optimizer.step()
 
         total_loss += loss.item()
-
         preds.append((output > 0.5).int())
         trues.append((yb > 0.5).int())
+
 
     preds = torch.cat(preds)
     trues = torch.cat(trues)
     acc = accuracy_score(trues.cpu().numpy().flatten(), preds.cpu().numpy().flatten())
     f1 = f1_score(trues.cpu().numpy().flatten(), preds.cpu().numpy().flatten(), zero_division=0)
 
+
+
     print(f"Epoch [{epoch+1}/{NUM_EPOCHS}] - Loss: {total_loss/len(train_loader):.4f} - Acc: {acc:.4f} - F1: {f1:.4f}")
 
-# Step 6: Save model 
+
+
+# Step 6 Save model 
 os.makedirs("models", exist_ok=True)
 torch.save(model.state_dict(), "models/music_lstm.pt")
-print("✅ Trained Music LSTM saved to models/music_lstm.pt")
+print("-----Trained Music LSTM saved to models/music_lstm.pt")
