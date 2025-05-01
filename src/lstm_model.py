@@ -12,6 +12,8 @@ class MusicLSTM(nn.Module):
         out, _ = self.lstm(x)  # out shape: (batch_size, seq_len, hidden_size)
 
 
+
+        #used chat below
 # only takeds the output from the LAST time step
         out = out[:, -1, :]  # shape becomes (batch_size, hidden_size)
 # pass through the final fully connected layer
