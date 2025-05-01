@@ -15,7 +15,7 @@ FILES = [
 def download_if_missing(url, filename):
     path = os.path.join(DATA_DIR, filename)
     if not os.path.exists(path):
-        print(f"⬇️ Downloading {filename}...") #helped alot
+        print(f"⬇️ Downloading {filename}...") #helped alot, likjed the emoji inputs
         urllib.request.urlretrieve(url, path)
         print(f"000 Saved: {path}")
     else:
