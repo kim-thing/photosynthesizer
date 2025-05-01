@@ -37,3 +37,4 @@ if __name__ == "__main__":
     else:
         print("xxx No MIDI file found.")
 #loads but not fully right, i think i need a github pages
+#this was for the index html that semi works
